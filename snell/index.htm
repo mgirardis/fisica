@@ -1,0 +1,67 @@
+﻿<html>
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+9th of November, 2013
+-->
+    <head>
+        <script src="../lib/fabric-all.min.js" type="text/javascript"></script>
+        <script src="fabric-extensions.js" type="text/javascript"></script>
+        <script src="snell.js" type="text/javascript"></script>
+        <link href="../style/estilos.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <canvas name="canvas" id="canvas" width="400" height="400"></canvas>
+        <fieldset id="entrada">
+            <legend>Entrada</legend>
+            <div class="linha">
+                <label for="emissorAngulo">&theta;<sub>1</sub> (graus) = </label>
+                <input type="range" name="emissorAngulo" id="emissorAngulo" min="-180" max="180" step="0.1" value="0" />
+                <input type="text" name="emissorAnguloValue" id="emissorAnguloValue" value="0" />
+            </div>
+            <div class="linha">
+                <label for="meio1Composicao">Meio 1:</label>
+                <select name="meio1Composicao" id="meio1Composicao">
+                    <!-- valores adimensionais de n
+                    -->
+                    <option value="1">Vácuo</option>
+                    <option value="1.000277" selected>Ar</option>
+                    <option value="1.3330">Água</option>
+                    <option value="1.50">Vidro</option>
+                    <option value="2.419">Diamante</option>
+                </select>
+                <span class="comentario">
+                    Valores do índice de refração (n) retirados de:
+                    <a href="http://en.wikipedia.org/wiki/List_of_refractive_indices" target="_blank">Wikipedia: List of Refractive Indices</a>
+                </span>
+            </div>
+            <div class="linha">
+                <label for="meio2Composicao">Meio 2:</label>
+                <select name="meio2Composicao" id="meio2Composicao">
+                    <!-- valores adimensionais de n
+                    -->
+                    <option value="1">Vácuo</option>
+                    <option value="1.000277">Ar</option>
+                    <option value="1.3330">Água</option>
+                    <option value="1.50" selected>Vidro</option>
+                    <option value="2.419">Diamante</option>
+                </select>
+                <span class="comentario">
+                    Valores do índice de refração (n) retirados de:
+                    <a href="http://en.wikipedia.org/wiki/List_of_refractive_indices" target="_blank">Wikipedia: List of Refractive Indices</a>
+                </span>
+            </div>
+        </fieldset>
+        <fieldset id="saida">
+            <legend>Saida de dados</legend>
+            <div class="linha">
+                <label for="anguloRefracao">&theta;<sub>2</sub> (graus) = </label>
+                <input type="text" name="anguloRefracao" id="anguloRefracao" value="" readonly />
+                <span class="equacao">&theta;<sub>2</sub> = sen<sup>-1</sup>[(n<sub>1</sub>/n<sub>2</sub>) sen&theta;<sub>1</sub>]</span>
+                <span class="comentario">Ângulo de refração em relação à horizontal (normal à interface entre os meios)</span>
+            </div>
+        </fieldset>
+        <a href="../index.htm" target="_top">Voltar</a>
+    </body>
+</html>
