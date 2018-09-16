@@ -1,0 +1,76 @@
+﻿<html>
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+19th of July, 2014
+-->
+    <head>
+        <!--<script src="../lib/jquery-1.9.1.min.js"></script>
+
+        <!-- Include Simple Slider JavaScript and CSS -- >
+        <script src="../lib/simple-slider.min.js"></script>
+        <link href="../style/simple-slider.css" rel="stylesheet" type="text/css" />-->
+        
+        <script src="forno.js" type="text/javascript"></script>
+        <link href="../style/estilos.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <fieldset id="entrada">
+            <legend>Entrada</legend>
+            <div class="linha">
+                <label for="fornoTemperatura">T (<sup>o</sup>C) = </label>
+                <input type="range" name="fornoTemperatura" id="fornoTemperatura" value="150" min="20" max="500" step="1" />
+                <!--<input type="text" name="fornoTemperatura" id="fornoTemperatura" value="150" data-slider="true" data-slider-range="20,500" data-slider-step="1" data-slider-snap="true" />-->
+                <input type="text" name="fornoTemperaturaValue" id="fornoTemperaturaValue" value="" readonly />
+                <span class="comentario">Temperatura do material em graus Celsius.</span>
+            </div>
+            <div class="linha">
+                <label for="barraMaterial">Material:</label>
+                <select name="barraMaterial" id="barraMaterial">
+                    <!-- valores em unidades do SI (1/Kelvin) para o coef de expansao termica linear do material a 25 graus Celsius:
+                         alpha = (1/L)dL/dT
+                         onde L é o comprimento do resistor (metros) e T é a temperatura absoluta (K)
+                    -->
+                    <option value="10.0e-6">Cimento</option>
+                    <option value="50.4e-6">Cloreto de Polivinil (PVC)</option>
+                    <option value="16.6e-6" selected>Cobre</option>
+                    <option value="1.18e-6">Diamante</option>
+                    <option value="0.77e-6">Quartzo</option>
+                </select>
+                <span class="comentario">
+                    Valores do Coeficiente de Dilatação linear (&alpha; em K<sup>-1</sup>) retirados de:
+                    <a href="http://www.engineeringtoolbox.com/linear-expansion-coefficients-d_95.html" target="_blank">Engineering Toolbox</a>
+                </span>
+            </div>
+            <div class="linha">
+                <label for="barraComprimento">L<sub>0</sub> (cm) = </label>
+                <select name="barraComprimento" id="barraComprimento">
+                    <option value="0.5">0.5</option>
+                    <option value="1" selected>1</option>
+                    <option value="20">20</option>
+                </select>
+                <span class="comentario">Comprimento inicial da barra em centimetros</span>
+            </div>
+        </fieldset>
+        <div class="linha">
+            <input type="button" name="fornoCalculaBtn" id="fornoCalculaBtn" value="Calcular" />
+        </div>
+        <fieldset id="saida">
+            <legend>Saida de dados</legend>
+            <div class="linha">
+                <label for="barraDilatacao">&Delta;L (cm) = </label>
+                <input type="text" name="barraDilatacao" id="barraDilatacao" value="" readonly />
+                <span class="equacao">&Delta;L = L<sub>0</sub>&alpha;(T-20)</span>
+                <span class="comentario">Variação do comprimento da barra em cm, considerando a T<sub>ambiente</sub>=20<sup>o</sup>C</span>
+            </div>
+            <div class="linha">
+                <label for="barraNovoComprimento">L (cm) = </label>
+                <input type="text" name="barraNovoComprimento" id="barraNovoComprimento" value="" readonly />
+                <span class="equacao">L = L<sub>0</sub> + &Delta;L</span>
+                <span class="comentario">Novo comprimento da barra em cm, considerando a T<sub>ambiente</sub>=20<sup>o</sup>C</span>
+            </div>
+        </fieldset>
+        <a href="../index.htm" target="_top">Voltar</a>
+    </body>
+</html>
