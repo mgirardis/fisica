@@ -1,0 +1,77 @@
+﻿<html>
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+9th of November, 2013
+-->
+    <head>
+        <!--<script src="../lib/fabric-all.min.js" type="text/javascript"></script>-->
+        <script src="fabric-corrected.js" type="text/javascript"></script>
+        <script src="fabric-extension.js" type="text/javascript"></script>
+        <!--<script src="test-polygon.js" type="text/javascript"></script>-->
+        <script src="inclinado.js" type="text/javascript"></script>
+        <link href="../style/estilos.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <canvas name="canvas" id="canvas" width="620" height="420"></canvas>
+        <fieldset id="entrada">
+            <legend>Entrada</legend>
+            <div class="linha">
+                <label for="planoAngulo">&theta; (graus) = </label>
+                <input type="range" name="planoAngulo" id="planoAngulo" min="0" max="90" step="0.1" value="30" />
+                <input type="text" name="planoAnguloValue" id="planoAnguloValue" value="30" />
+            </div>
+            <div class="linha">
+                <label for="materialPlanoBloco">Materiais bloco/plano:</label>
+                <select name="materialPlanoBloco" id="materialPlanoBloco">
+                    <!-- valores dos coeficientes de atrito
+                         estatico;cinetico
+                    -->
+                    <option value="0.85;0.21">Zinco/Ferro fundido</option>
+                    <option value="0.9;0.5" selected>Borracha/Asfalto seco</option>
+                    <option value="0.54;0.32">Madeira/Madeira</option>
+                    <option value="1.05;0.29">Cobre/Ferro fundido</option>
+                    <option value="0.9;0.4">Vidro/Vidro</option>
+                </select>
+                <span class="comentario">
+                    Valores dos coeficientes de atrito retirados de:
+                    <a href="http://www.engineeringtoolbox.com/friction-coefficients-d_778.html" target="_blank">Engineering toolbox</a>
+                </span>
+            </div>
+            <div class="linha">
+                <label for="blocoVelIni">v<sub>0</sub> (cm/s) = </label>
+                <input type="text" name="blocoVelIni" id="blocoVelIni" value="0" />
+                <span class="comentario">velocidade inicial do bloco em centimetros por segundo</span>
+            </div>
+        </fieldset>
+        <div class="linha">
+            <input type="button" name="inicioBtn" id="inicioBtn" value="Solta" />
+            <input type="button" name="resetaBtn" id="resetaBtn" value="Reseta" />
+        </div>
+        <fieldset id="saida">
+            <legend>Saida de dados</legend>
+            <div class="linha">
+                <label for="tempo1">t<sub>1</sub> (s) = </label>
+                <input type="text" name="tempo1" id="tempo1" value="" readonly />
+                <span class="comentario">tempo medido para o deslocamento entre 0 e 50 cm</span>
+            </div>
+            <div class="linha">
+                <label for="tempo2">t<sub>2</sub> (s) = </label>
+                <input type="text" name="tempo2" id="tempo2" value="" readonly />
+                <span class="comentario">tempo medido para o deslocamento entre 50 e 100 cm</span>
+            </div>
+            <div class="linha">
+                <label for="tempo3">t<sub>3</sub> (s) = </label>
+                <input type="text" name="tempo3" id="tempo3" value="" readonly />
+                <span class="comentario">tempo medido para o deslocamento entre 100 e 150 cm</span>
+            </div>
+            <div class="linha">
+                <label for="tempo4">t<sub>4</sub> (s) = </label>
+                <input type="text" name="tempo4" id="tempo4" value="" readonly />
+                <span class="comentario">tempo medido para o deslocamento entre 150 e 200 cm</span>
+            </div>
+        </fieldset>
+        <a href="../index.htm" target="_top">Voltar</a>
+    </body>
+</html>
