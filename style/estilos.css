@@ -1,0 +1,33 @@
+﻿/*
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+9th of November, 2013
+*/
+span.comentario
+{
+    font-size: 10pt;
+}
+
+span.equacao
+{
+    font-size: 10pt;
+    padding: 4px;
+    border: 1px dashed #cccccc;
+}
+
+div.linha
+{
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+fieldset
+{
+    border: 1px dashed #cccccc;
+}
+
+canvas
+{
+    border: 1px solid #cccccc;
+}
