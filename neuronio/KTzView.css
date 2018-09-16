@@ -1,0 +1,245 @@
+/*
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+12th of July, 2016
+*/
+@charset "utf-8";
+/* CSS Document */
+
+canvas
+{
+	background: white;
+	border: 1px solid #CCC;
+}
+
+#cnvCur
+{
+	border-top: 0;
+}
+
+input
+{
+	height: 18px;
+	font-size: inherit;
+}
+
+input[type="text"]
+{
+    margin-left: 4px;
+    width: 90%;
+}
+
+textarea
+{
+	font-size: inherit;
+}
+
+select, option
+{
+	font-size: inherit;
+	height: 18px;
+}
+
+label
+{
+	height: 18px;
+	font-size: inherit;
+}
+
+#container
+{
+	width: 1274px;
+}
+
+#leftCol
+{
+	width: 1024px;
+	float: left;
+}
+
+#rightCol
+{
+	width: 250px;
+	float: right;
+	font-size: 11px;
+	overflow: visible;
+}
+
+#graphic
+{
+	width: 100%;
+	float: left;
+	overflow: visible;
+}
+
+#controlPanel
+{
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-top: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
+	width: 100%;
+	font-size: 11px;
+	float: left;
+	overflow: visible;
+}
+
+#outputPanel
+{
+	width: 100%;
+	font-size: 11px;
+	float: left;
+	overflow: visible;
+	background: #EEE;
+}
+
+#parametersGroup
+{
+	width: 33%;
+	float: left;
+	border-right: 1px solid #CCC;
+	background: #EEE;
+	height: inherit;
+}
+
+#stimuliGroup
+{
+	width: 33%;
+	float: left;
+	border-right: 1px solid #CCC;
+	background: #EEE;
+	height: inherit;
+}
+
+#stimulusTypeDelta
+{
+}
+
+#stimulusTypeCos
+{
+}
+
+#stimulusTypeNeu
+{
+}
+
+#stimulusTypeFreeDelAddSpace
+{
+    width: 100%;
+}
+
+.stimulusType
+{
+	overflow: auto;
+}
+
+.stimulusEquation
+{
+	font-size: 12px;
+	height: 40px;
+}
+
+#graphicGroup
+{
+	width: 33%;
+	float: left;
+	background: #EEE;
+	height: inherit;
+}
+
+.colLeftColumn, .colRightColumn
+{
+    float: left;
+    width: 50%;
+    text-align: left;
+}
+
+.paramLeftColumn
+{
+	float: left;
+	width: 20%;
+	text-align: right;
+}
+
+.paramRightColumn
+{
+	float: left;
+	width: 80%;
+	text-align: left;
+}
+
+.freeDeltaLeftColumn
+{
+    float: left;
+    width: 80%;
+    text-align: left;
+}
+
+.freeDeltaRightColumn
+{
+    float: left;
+    width: 20%;
+    text-align: right;
+}
+
+.groupTitle
+{
+	width: 70%;
+	border-bottom: 1px solid #CCC;
+	font-weight: bold;
+	text-align: left;
+	margin-bottom: 10px;
+	padding-bottom: 4px;
+	padding-left: 4px;
+}
+
+#controlPanelButtons
+{
+	float: left;
+	width: 100%;
+	padding-top: 4px;
+	margin-top: 10px;
+}
+
+.controlPanelLineEq
+{
+    padding: 4px;
+	background: white;
+	height: 50px;
+	vertical-align: middle;
+	overflow: auto;
+    text-align: left;
+    border: 1px dashed #CCC;
+}
+
+.controlPanelLine
+{
+	padding: 0;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	background: white;
+	height: 20px;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+}
+
+.controlPanelLineExt
+{
+	padding: 0;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	background: white;
+	height: 30px;
+	vertical-align: middle;
+	text-align: center;
+	overflow: auto;
+}
+
+.controlPanelLine:hover, .controlPanelLineEq:hover, .controlPanelLineExt:hover
+{
+	background: #EEE;
+}

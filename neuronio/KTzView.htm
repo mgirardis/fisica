@@ -1,0 +1,420 @@
+<html>
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+12th of July, 2016
+-->
+<head>
+<script language="javascript" type="text/javascript" src="jquery-1.6.js"></script>
+<script src="KTzView.js" type="text/javascript"></script>
+<link href="KTzView.css" rel="stylesheet" type="text/css">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+</head>
+<body>
+	<div id="container">
+		<div id="leftCol">
+	        <div id="graphic">
+	            <canvas id="cnvNeu" width="1024" height="300"></canvas><br />
+	            <canvas id="cnvCur" width="1024" height="100"></canvas>
+	        </div>
+	        <div id="controlPanel"> 
+	            <div id="parametersGroup">
+	            	<div class="groupTitle">KTz neuron parameters</div> 
+	                <div class="controlPanelLine">
+	                    <label for="neuronTypeCbx">choose neuron type</label>
+	                    <select name="neuronTypeCbx" id="neuronTypeCbx" onChange="changeNeuronType()">
+	                        <option value="KTNeuron">KT</option> 
+	                        <option value="KTNeuronSig">KT logistic</option> 
+	                        <option value="KTzNeuron" selected>KTz</option> 
+	                        <option value="KTzNeuronSig">KTz logistic</option>
+	                    </select> 
+	                </div> 
+	                <div class="controlPanelLine">
+	                    <input type="button" name="getSilentZBtn" id="getSilentZBtn" value="get equilibrium y0,z0 (or H)" />
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="x0">x<sub>0</sub> =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="x0" id="x0" value="-0.6971564118917724" /></div>
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="y0">y<sub>0</sub> =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="y0" id="y0" value="-0.6971564118917724" /></div>
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="z0">z<sub>0</sub> =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="z0" id="z0" value="-0.022748704865822533" /></div>
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="K">&Kappa; =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="K" id="K" value="0.6" /></div>
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="T">T =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="T" id="T" value="0.35" /></div>
+	                </div>
+	                <div class="controlPanelLine ktz">
+	                	<div class="paramLeftColumn"><label for="d">&delta; =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="d" id="d" value="0.001" /></div>
+	                </div>
+	                <div class="controlPanelLine ktz">
+	                	<div class="paramLeftColumn"><label for="l">&lambda; =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="l" id="l" value="0.008" /></div>
+	                </div>
+	                <div class="controlPanelLine ktz">
+	                	<div class="paramLeftColumn"><label for="xR">x<sub>R</sub> =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="xR" id="xR" value="-0.7" /></div>
+	                </div>
+	                <div class="controlPanelLine">
+	                	<div class="paramLeftColumn"><label for="H">H =</label></div>
+	                    <div class="paramRightColumn"><input type="text" name="H" id="H" value="0" /></div>
+	                </div>
+	                <div class="controlPanelLineExt" style="height: 30px">
+	                    <input type="checkbox" id="neuWithPoints" name="neuWithPoints" value="yes" /><label for="neuWithPoints">plot with points?</label>&nbsp;|&nbsp;
+	                    <input type="checkbox" id="neuWithLines" name="neuWithLines" value="yes" /><label for="neuWithLines">plot with lines?</label>
+	                </div>
+	            </div>
+	            <div id="stimuliGroup">
+	            	<div class="groupTitle">stimuli parameters</div>
+	                <div class="controlPanelLine">choose stimulus type:
+	                	<select name="stimulusTypeCbx" id="stimulusTypeCbx" onChange="changeStimulusType()">
+	                    	<option value="Delta" selected>delta</option>
+	                        <option value="DelSeries">delta series</option>
+	                        <option value="FreeDel">free delta series</option>
+	                        <option value="Cos">cosine oscillatory</option>
+	                        <option value="Neu">another neuron CSM</option>
+	                        <option value="Noi">another neuron noisy CSM</option>
+	                        <option value="Lin">linear varying current</option>
+	                        <option value="2Neu">2 neurons network CSM</option>
+	                    </select>
+	                </div>
+	                <div id="stimulusTypeDelta" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = I &sum;<sub>i=0</sub><sup>(N-1)</sup>[(k)<sup>i</sup>&delta;<sub>t,t<sub>0</sub>+i&Delta;t</sub>]</span>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Delta_I">I =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Delta_I" id="Delta_I" value="0.1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Delta_nStim">N<sub>stimuli</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Delta_nStim" id="Delta_nStim" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Delta_sStim">t<sub>0</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Delta_sStim" id="Delta_sStim" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Delta_dt">&Delta;t =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Delta_dt" id="Delta_dt" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Delta_osc">k =</label></div>
+	                        <div class="paramRightColumn">
+	                            <select type="text" name="Delta_osc" id="Delta_osc">
+	                                <option value="1" selected>+1</option>
+	                                <option value="-1">-1</option>
+	                            </select>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeFreeDel" class="stimulusType">
+	                    <div class="controlPanelLineEq">
+	                        <span class="stimulusEquation">I<sub>ext</sub>(t) = I &sum;<sub>i=0</sub><sup>(N-1)</sup>[(k)<sup>k</sup>&delta;<sub>t,t<sub>0</sub>+k&Delta;t</sub>]</span>
+	                    </div>
+	                    <div class="controlPanelLine"><input type="button" name="addFreeDeltaBtn" id="addFreeDeltaBtn" value="add delta" /></div>
+	                    <div id="stimulusTypeFreeDelAddSpace">
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeDelSeries" class="stimulusType">
+	                    <div class="controlPanelLineEq">
+	                        <span class="stimulusEquation">I<sub>ext</sub>(t) = I &sum;<sub>i=0</sub><sup>(N-1)</sup>[(k)<sup>k</sup>&delta;<sub>t,t<sub>0</sub>+k&Delta;t</sub>]</span>
+	                    </div>
+	                    <div class="colLeftColumn">
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_I">I =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_I" id="DelSeries_I" value="0.1" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_nStim">N<sub>sti</sub> =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_nStim" id="DelSeries_nStim" value="2" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_sStim">t<sub>0</sub> =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_sStim" id="DelSeries_sStim" value="10" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_dt">&Delta;t =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_dt" id="DelSeries_dt" value="30" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_osc">k =</label></div>
+	                            <div class="paramRightColumn">
+	                                <select type="text" name="DelSeries_osc" id="DelSeries_osc">
+	                                    <option value="1" selected>+1</option>
+	                                    <option value="-1">-1</option>
+	                                </select>
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <div class="colRightColumn">
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_dtS">&Delta;t<sub>s</sub> =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_dtS" id="DelSeries_dtS" value="50" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_nSer">N<sub>ser</sub> =</label></div>
+	                            <div class="paramRightColumn"><input type="text" name="DelSeries_nSer" id="DelSeries_nSer" value="2" /></div>
+	                        </div>
+	                        <div class="controlPanelLine">
+	                            <div class="paramLeftColumn"><label for="DelSeries_oscPulse">m =</label></div>
+	                            <div class="paramRightColumn">
+	                                <select type="text" name="DelSeries_oscPulse" id="DelSeries_oscPulse">
+	                                    <option value="1" selected>+1</option>
+	                                    <option value="-1">-1</option>
+	                                </select>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeCos" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = I cos(&omega;t - &phi;), t<sub>i</sub> &le; t &le; t<sub>f</sub></span>
+	                    </div>
+		                <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Cos_I">I =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Cos_I" id="Cos_I" value="0.08" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Cos_omega">&omega; =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Cos_omega" id="Cos_omega" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Cos_phi">&phi; =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Cos_phi" id="Cos_phi" value="0" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Cos_ti">t<sub>i</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Cos_ti" id="Cos_ti" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Cos_tf">t<sub>f</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Cos_tf" id="Cos_tf" value="100" /></div>
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeNeu" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = f(t) <br />
+	                        f(t+1) = (1 - 1/&tau;<sub>f</sub>)f(t) + g(t) <br />
+	                        g(t+1) = (1 - 1/&tau;<sub>g</sub>)g(t) + J&theta;(x'(t))
+	                        </span>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_tauf">&tau;<sub>f</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_tauf" id="Neu_tauf" value="15" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_taug">&tau;<sub>g</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_taug" id="Neu_taug" value="15" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_J">J =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_J" id="Neu_J" value="-0.15" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_I">I =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_I" id="Neu_I" value="0.08" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_nStim">N<sub>stimulus</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_nStim" id="Neu_nStim" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_sStim">t<sub>0</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_sStim" id="Neu_sStim" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Neu_dt">&Delta;t =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Neu_dt" id="Neu_dt" value="10" /></div>
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeNoi" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = f(t) <br />
+	                        f(t+1) = (1 - 1/&tau;<sub>f</sub>)f(t) + g(t) <br />
+	                        g(t+1) = (1 - 1/&tau;<sub>g</sub>)g(t) + (J + &epsilon;(t))&theta;(x'(t)) <br />
+	                        0 &leq; &epsilon;(t) &leq; R
+	                        </span>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_tauf">&tau;<sub>f</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_tauf" id="Noi_tauf" value="2" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_taug">&tau;<sub>g</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_taug" id="Noi_taug" value="2" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_J">J =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_J" id="Noi_J" value="-0.15" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_R">|R| =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_R" id="Noi_R" value="0.036" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_I">I =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_I" id="Noi_I" value="0.1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_nStim">N<sub>stimulus</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_nStim" id="Noi_nStim" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_sStim">t<sub>0</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_sStim" id="Noi_sStim" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Noi_dt">&Delta;t =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Noi_dt" id="Noi_dt" value="10" /></div>
+	                    </div>
+	                </div>
+	                <div id="stimulusTypeLin" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = a(t-t<sub>0</sub>) + I<sub>0</sub>; t<sub>0</sub> &le; t &le; t<sub>1</sub></span>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Lin_I0">I<sub>0</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Lin_I0" id="Lin_I0" value="0.00" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Lin_a">a =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Lin_a" id="Lin_a" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Lin_t0">t<sub>0</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Lin_t0" id="Lin_t0" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="Lin_t1">t<sub>1</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="Lin_t1" id="Lin_t1" value="20" /></div>
+	                    </div>
+	                </div>
+	                <div id="stimulusType2Neu" class="stimulusType">
+	                	<div class="controlPanelLineEq">
+	                    	<span class="stimulusEquation">I<sub>ext</sub>(t) = f(t) <br />
+	                        f(t+1) = (1 - 1/&tau;<sub>f</sub>)f(t) + g(t) <br />
+	                        g(t+1) = (1 - 1/&tau;<sub>g</sub>)g(t) + J&theta;(x'(t))
+	                        </span>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_tauf">&tau;<sub>f</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_tauf" id="2Neu_tauf" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_taug">&tau;<sub>g</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_taug" id="2Neu_taug" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_J">J =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_J" id="2Neu_J" value="-0.15" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_I">I =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_I" id="2Neu_I" value="0.1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_nStim">N<sub>stimulus,1</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_nStim" id="2Neu_nStim" value="1" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_sStim">t<sub>0,1</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_sStim" id="2Neu_sStim" value="10" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="2Neu_dt">&Delta;t<sub>1</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="2Neu_dt" id="2Neu_dt" value="10" /></div>
+	                    </div>
+	                </div>
+	                <div class="controlPanelLineExt" style="height: 30px">
+	                    <input type="checkbox" id="stiWithPoints" name="stiWithPoints" value="yes" /><label for="stiWithPoints">plot with points?</label>&nbsp;|&nbsp;
+	                    <input type="checkbox" id="stiWithLines" name="stiWithLines" value="yes" /><label for="stiWithLines">plot with lines?</label>
+	                </div>
+	            </div>
+	            <div id="graphicGroup">
+	                <div>
+	                    <div class="groupTitle">graphic parameters</div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="nStart">t<sub>start</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="nStart" id="nStart" value="0" /></div>
+	                    </div>
+	                    <div class="controlPanelLine">
+	                        <div class="paramLeftColumn"><label for="nSteps">t<sub>max</sub> =</label></div>
+	                        <div class="paramRightColumn"><input type="text" name="nSteps" id="nSteps" value="500" /></div>
+	                    </div>
+	                </div>
+	                <div>
+	                    <div class="groupTitle">equations...</div>
+	                    <div class="controlPanelLineEq KTzNeuron" style="height: 50px;">
+	                    x(t+1) = tanh((x(t) - Ky(t) + z(t) + I<sub>ext</sub>)/T) <br />
+	                    y(t+1) = x(t) <br />
+	                    z(t+1) = (1-&delta;)z(t) - &lambda;(x(t) - x<sub>R</sub>)
+	                    </div>
+	                    <div class="controlPanelLineEq KTNeuron" style="height: 50px;">
+	                    x(t+1) = tanh((x(t) - Ky(t) + H + I<sub>ext</sub>)/T) <br />
+	                    y(t+1) = x(t)
+	                    </div>
+	                    <div class="controlPanelLineEq KTzNeuronSig" style="height: 50px;">
+	                    x(t+1) = f((x(t) - Ky(t) + z(t) + I<sub>ext</sub>)/T) <br />
+	                    y(t+1) = x(t) <br />
+	                    z(t+1) = (1-&delta;)z(t) - &lambda;(x(t) - x<sub>R</sub>)<br />
+	                    f(u) = u / (1+|u|)
+	                    </div>
+	                    <div class="controlPanelLineEq KTNeuronSig" style="height: 50px;">
+	                    x(t+1) = f((x(t) - Ky(t) + H + I<sub>ext</sub>)/T) <br />
+	                    y(t+1) = x(t) <br />
+	                    f(u) = u / (1+|u|)
+	                    </div>
+	                </div>
+	            </div>
+				<div id="controlPanelButtons" class="controlPanelLine">
+	                <input name="calculateBtn" id="calculateBtn" type="button" value="calculate and plot" /> | <input name="clearBtn" id="clearBtn" type="button" value="clear graphic" />
+	            </div>
+	        </div>
+	        <div id="outputPanel">
+	        	<div class="groupTitle">output data</div>
+	        	<div class="controlPanelLine" style="overflow: visible;"><textarea name="outputTxt" id="outputTxt" cols="100" rows="15"></textarea></div>
+	            <!--<div class="controlPanelLine" style="overflow: visible;"><textarea name="debugTxt" id="debugTxt" cols="100" rows="15"></textarea></div>-->
+	        </div>
+        </div>
+        <div id="rightCol">
+        	<div id="painelAnim">
+                <div class="controlPanelLine">
+                    <div class="paramLeftColumn"><label for="intervaloAnim">Anim interval</label></div>
+                    <div class="paramRightColumn"><input type="text" id="intervaloAnim" size="50" name="intervaloAnim" value="50" />ms</div>
+                </div>
+                <div class="controlPanelLine">
+                    <div class="paramLeftColumn"><label for="numeroNeu">N</label></div>
+                    <div class="paramRightColumn"><input type="text" id="numeroNeu" size="50" name="numeroNeu" value="50" /></div>
+                </div>
+                <div class="controlPanelLine">
+                    <div class="paramLeftColumn"><label for="indexStimulus">neuron #</label></div>
+                    <div class="paramRightColumn"><input type="text" id="indexStimulus" size="50" name="indexStimulus" value="25" /></div>
+                </div>
+                <div class="controlPanelLine">
+                    <div class="paramLeftColumn"><label for="JPulse">J</label></div>
+                    <div class="paramRightColumn"><input type="text" id="JPulse" size="50" name="JPulse" value="0.03" /></div>
+                </div>
+                <div class="controlPanelLineExt">
+                    <select name="animaTipo" id="animaTipo">
+                        <option value="singleNeuron" selected>1 Neurônio</option>
+                        <option value="linearLattice">Rede Linear</option>
+                    </select>
+                    <input name="animarBtn" id="animarBtn" type="button" value="animar" />
+                    <input name="pararBtn" id="pararBtn" type="button" value="parar" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
