@@ -1,4 +1,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+27th of December, 2010
+-->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
@@ -201,15 +207,15 @@ Positron.prototype.getInteractionType = function() {
 
 	/* csPercent indexes:
 	 * 0 = tcs / tcs;
-	 * 1 = aniquilação / tcs;
-	 * 2 = formação PS / tcs;
-	 * dúvidas olhar no arquivo de dados
+	 * 1 = aniquilaÃ§Ã£o / tcs;
+	 * 2 = formaÃ§Ã£o PS / tcs;
+	 * dÃºvidas olhar no arquivo de dados
 	 *
-	 * abaixo seleciona-se o tipo de interação baseado no percentual em relação à TCS.
-	 * a quantidade de estruturas de seleção (if e else) depende de quantos tipos diferentes de iteração teremos,
-	 * ou seja, da quantidade de índices correspondentes às seções de choque no arquivo de dados
+	 * abaixo seleciona-se o tipo de interaÃ§Ã£o baseado no percentual em relaÃ§Ã£o Ã  TCS.
+	 * a quantidade de estruturas de seleÃ§Ã£o (if e else) depende de quantos tipos diferentes de iteraÃ§Ã£o teremos,
+	 * ou seja, da quantidade de Ã­ndices correspondentes Ã s seÃ§Ãµes de choque no arquivo de dados
 	 *
-	 * dúvida: tem como generalizar a estrutura abaixo? -> vamos pensar! :)
+	 * dÃºvida: tem como generalizar a estrutura abaixo? -> vamos pensar! :)
 	 */
 	if ((rNum > 0) && (rNum <= csPercent[1])) {
 		// the random number is in (0,Pa], where Pa is the annihilation percentual
