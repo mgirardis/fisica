@@ -1,0 +1,484 @@
+<script>
+/*
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+8th of July, 2012
+*/
+Math.sign = function(x)
+{
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
+Math.tanh = function(x)
+{
+	return (Math.exp(2.0 * x) - 1.0) / (Math.exp(2.0 * x) + 1.0);
+}
+Math.atanh = function(x)
+{
+	return Math.log((1.0 + x) / (1.0 - x)) / 2.0;
+}
+Math.maxInArray = function(x)
+{
+    var mxm = x[0];
+    var i = 0, n = x.length;
+    while (i < n) {
+        if (x[i] > mxm) {
+            mxm = x[i];
+        }
+        i++;
+    }
+    return mxm;
+}
+Math.minInArray = function(x)
+{
+    var mn = x[0];
+    var i = 0, n = x.length;
+    while (i < n) {
+        if (x[i] < mn) {
+            mn = x[i];
+        }
+        i++;
+    }
+    return mn;
+}
+
+function TransCoord1D(mxi,mxf,cxi,cxf)
+{
+    this.Bx = (cxf - cxi)/(mxf - mxi);
+    this.Ax = cxi - this.Bx*mxi;
+    //console.info(this.Ax + ", " + this.Bx);
+}
+TransCoord1D.prototype.cx = function(mx)
+{
+    return this.Ax + this.Bx * mx;
+}
+
+function TransCoord2D(cLrg,cAlt,mxi,myi,mxf,myf)
+{
+    this.Bx = cLrg/(mxf-mxi);
+    this.Ax = - this.Bx * mxi;
+    this.By = cAlt/(myi-myf);
+    this.Ay = - this.By * myf;
+}
+
+TransCoord2D.prototype.cx = function(mx)
+{
+    return this.Ax + this.Bx * mx;
+}
+TransCoord2D.prototype.cy = function(my)
+{
+    return this.Ay + this.By * my;
+}
+function Graphic2D(xMin, yMin, xMax, yMax, bgColor, axisColor, cnv)
+{
+	this.cnv = cnv;
+	this.width = cnv.width;
+	this.height = cnv.height;
+	this.xMin = xMin;
+	this.yMin = yMin;
+	this.xMax = xMax;
+	this.yMax = yMax;
+    this.axisColor = axisColor;
+    this.bgColor = bgColor;
+	this.reset();
+}
+Graphic2D.prototype.resetBGColor = function()
+{
+    this.ctx.beginPath();
+    this.ctx.fillStyle = this.bgColor;
+    this.ctx.rect(0, 0, this.width, this.height);
+    this.ctx.closePath();
+    this.ctx.fill();
+}
+Graphic2D.prototype.reset = function()
+{
+    this.tc = new TransCoord2D(this.width, this.height, this.xMin, this.yMin, this.xMax, this.yMax);
+    this.ctx = this.cnv.getContext("2d");
+	this.clear();
+}
+Graphic2D.prototype.clear = function()
+{
+	this.ctx.clearRect(0, 0, this.width, this.height);
+    if (this.bgColor != "white")
+        this.resetBGColor();
+	this.drawAxes();
+}
+Graphic2D.prototype.drawAxes = function()
+{
+    this.drawLine(0,this.yMin,0,this.yMax,this.axisColor,1);
+    this.drawLine(this.xMin,0,this.xMax,0,this.axisColor,1);
+}
+Graphic2D.prototype.plotGraphic = function(x, y, colorLine, withPoints, colorPoints, resetAxisValue)
+{
+    if (resetAxisValue)
+    {
+        this.xMin = Math.minInArray(x);
+        this.xMax = Math.maxInArray(x);
+        this.yMin = Math.minInArray(y);
+        this.yMax = Math.maxInArray(y);
+        this.reset();
+    }
+
+	var	n = x.length;
+	var i;
+	if (withPoints)
+	{
+		i = 0
+		while (i < n)
+		{
+			this.drawPoint(x[i], y[i], colorPoints, 2);
+			i++;
+		}
+	}
+    n--;
+    i = 0;
+    while (i < n)
+    {
+        this.drawLine(x[i],y[i],x[i+1],y[i+1],colorLine,2);
+        i++;
+    }
+}
+Graphic2D.prototype.drawPoint = function(x, y, color, rad)
+{
+    this.ctx.beginPath();
+    this.ctx.arc(this.tc.cx(x),this.tc.cy(y),rad,0,2*Math.PI,0);
+    this.ctx.fillStyle = color;
+    this.ctx.closePath();
+    this.ctx.fill();
+}
+Graphic2D.prototype.drawCircle = function(x, y, color, lineWidth, rad)
+{
+    this.ctx.beginPath();
+    this.ctx.arc(this.tc.cx(x),this.tc.cy(y),rad,0,2*Math.PI,0);
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.closePath();
+    this.ctx.stroke();
+}
+Graphic2D.prototype.drawEllipse = function(x0, y0, a, exc, lineWidth, color)
+{
+    x0 += a * exc;
+    var r = a * (1 - exc*exc)/(1 + exc),
+        x = x0 + r,
+        y = y0;
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.tc.cx(x), this.tc.cy(y));
+    var i = 0.01 * Math.PI;
+    var twoPi = 2 * Math.PI;
+    while (i < twoPi) {
+        r = a * (1 - exc*exc)/(1 + exc * Math.cos(i));
+        x = x0 + r * Math.cos(i);
+        y = y0 + r * Math.sin(i);
+        this.ctx.lineTo(this.tc.cx(x), this.tc.cy(y));
+        i += 0.01;
+    }
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.strokeStyle = color;
+    this.ctx.closePath();
+    this.ctx.stroke();
+}
+Graphic2D.prototype.drawRect = function(x, y, w, h, color)
+{
+    this.ctx.beginPath();
+    this.ctx.fillStyle = color;
+    this.ctx.rect(this.tc.cx(x), this.tc.cy(y), this.tc.cx(w), this.tc.cy(h));
+    this.ctx.closePath();
+    this.ctx.fill();
+}
+Graphic2D.prototype.drawLine = function(x1, y1, x2, y2, color, width)
+{
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = width;
+    this.ctx.moveTo(this.tc.cx(x1),this.tc.cy(y1));
+    this.ctx.lineTo(this.tc.cx(x2),this.tc.cy(y2));
+    this.ctx.stroke();
+}
+Graphic2D.prototype.toImage = function()
+{
+    return this.cnv.toDataURL("image/png");
+}
+Graphic2D.prototype.setBGImg = function(img)
+{
+    this.ctx.drawImage(img, 0, 0, this.width, this.height);
+}
+
+function Planet(x0, y0, exc, a, w, color)
+{
+    this.exc = exc;
+    this.a = a;
+    this.w = w;
+    this.color = color;
+    this.x0 = x0;
+    this.y0 = y0;
+    this.r = x0;
+    this.x = x0;
+    this.y = y0;
+}
+Planet.prototype.move = function(t)
+{
+    this.r = this.a * (1 - this.exc*this.exc)/(1 + this.exc * Math.cos(this.w*t));
+    this.x = this.x0 + this.r * Math.cos(this.w*t);
+    this.y = this.y0 + this.r * Math.sin(this.w*t);
+}
+Planet.prototype.getX = function()
+{
+    return this.x;
+}
+Planet.prototype.getY = function()
+{
+    return this.y;
+}
+
+var passo,
+    //x0 = 50,
+    //y0 = 0,
+    t0 = (new Date()).getTime(),
+    //x,
+    //y,
+    //r,
+    wSel = 2,
+    aSel = 10,
+    excSel = 0.3,
+    nPlanetas = 9,
+    cnvBGImg,
+    planetas = new Array();
+    //plan;
+    //ajustaSemiEixo;
+
+window.onload = function()
+{
+    inicializaCanvas();
+    criaPlanetas();
+    recomecaTudo();
+    document.getElementById("reajusta").onclick = function() { recomecaTudo(); }
+    document.getElementById("planetaSel").onchange = function() { recomecaTudo(); }
+    //graphic.drawPoint(0,0,"red",30);
+}
+
+function criaPlanetas()
+{
+    var infoP;
+    var i = 0;
+    while (i < nPlanetas)
+    {
+        infoP = infoPlaneta(i);
+        infoP.a = ajustaSemiEixo(infoP.a);
+        planetas[i] = new Planet(2*infoP.a*infoP.exc, 0, infoP.exc, infoP.a, 2*Math.PI/infoP.T, "purple")
+        i++;
+    }
+}
+
+function inicializaCanvas()
+{
+    graphic = new Graphic2D(-304, -403, 502, 403, "black", "white", document.getElementById("cnv"));
+    graphic.clear();
+    desenhaOrbitas();
+    graphic.drawPoint(0,0,"red",2); // sol
+    
+    // creating bg img
+    var img = graphic.toImage();
+    cnvBGImg = document.createElement("img");
+    cnvBGImg.src = img;
+    
+    graphic.clear();
+    graphic.setBGImg(cnvBGImg);
+}
+
+function desenhaOrbitas()
+{
+    var infoP;
+    var i = 0;
+    while (i < nPlanetas)
+    {
+        infoP = infoPlaneta(i);
+        infoP.a = ajustaSemiEixo(infoP.a);
+        graphic.drawEllipse(infoP.a*infoP.exc,0,infoP.a,infoP.exc,1,"grey");
+        i++;
+    }
+}
+
+function recomecaTudo()
+{
+    ajustaValoresCaixas();
+    resetaMovimento();
+}
+
+function resetaMovimento()
+{
+    ajustaConstantes();
+    criaPlanetas();
+    if (passo) {
+        clearInterval(passo);
+	}
+    //plan = new Planet(2*aSel*excSel,0,excSel,aSel,wSel,"purple");
+	passo = setInterval("move()", 50);
+}
+
+function move()
+{
+    t = ((new Date()).getTime() - t0) / 1000;
+    var i = 0;
+    while (i < nPlanetas)
+    {
+        planetas[i].move(t);
+        i++;
+    }
+    //console.info(t);
+    //plan.move(t);
+    desenha();
+}
+
+function desenha()
+{
+    graphic.setBGImg(cnvBGImg);
+    graphic.drawEllipse(aSel*excSel,0,aSel,excSel,1,"orange");
+    var i = 0;
+    while (i < nPlanetas)
+    {
+        graphic.drawPoint(planetas[i].getX(),planetas[i].getY(),"white",2); // planeta
+        i++;
+    }
+    //console.info(plan.getX()+", "+plan.getY());
+    //graphic.drawPoint(plan.getX(),plan.getY(),"purple",4); // planeta
+}
+
+function ajustaConstantes()
+{
+    excSel = parseFloat(document.getElementById("exc").value);
+    aSel = ajustaSemiEixo(parseFloat(document.getElementById("a").value));
+    wSel = 2 * Math.PI / parseFloat(document.getElementById("T").value);
+}
+
+function ajustaSemiEixo(aUA)
+{
+    /*
+    como o canvas tem 100 unidades de comprimento, a órbita de Plutão tem 40 UA
+    e a órbita de mercúrio tem 0.387 UA, ambas as órbitas devem aparecer no canvas, então,
+    fazemos a seguinte transformação para que a órbita de mercúrio seja
+    com aproximadamente 10 unid canv e a órbita de plutão seja aproximadamente 100 unid canvas
+    aCanvas(aUA) = aUA * c1 + c2
+    e determinamos c1 e c2 impondo que 40 UA deve corresponder a 100 unid canv
+    e 0.35 UA deve corresponder a 10 unid canv
+    aCanvas(40) = 40 * c1 + c2 = 100
+    aCanvas(0.35) = 0.35 * c1 + c2 = 10
+    portanto
+    c1 = 2.2698612862547288776796973518285
+    c2 = 9.20554854981084489281210592686
+    * /
+    return 2.269861286254 * aUA + 9.205548549810;*/
+    return aUA * 10;
+}
+
+function ajustaValoresCaixas()
+{
+    var combo = document.getElementById("planetaSel");
+    var infoPlan = infoPlaneta(combo.value);
+    document.getElementById("exc").value = infoPlan.exc;
+    document.getElementById("a").value = infoPlan.a;
+    document.getElementById("T").value = infoPlan.T;
+}
+
+function infoPlaneta(nomeOrNum)
+{
+    if ((nomeOrNum == "mrc") || (nomeOrNum == 0))
+    {
+        return {
+            exc: 0.206,
+            a: 0.387, // unidade astronomica
+            T: 0.241 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "vns") || (nomeOrNum == 1))
+    {
+        return {
+            exc: 0.007,
+            a: 0.723, // unidade astronomica
+            T: 0.615 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "ter") || (nomeOrNum == 2))
+    {
+        return {
+            exc: 0.017,
+            a: 1, // unidade astronomica
+            T: 1 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "mrt") || (nomeOrNum == 3))
+    {
+        return {
+            exc: 0.093,
+            a: 1.524, // unidade astronomica
+            T: 1.881 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "jpt") || (nomeOrNum == 4))
+    {
+        return {
+            exc: 0.048,
+            a: 5.203, // unidade astronomica
+            T: 11.86 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "stn") || (nomeOrNum == 5))
+    {
+        return {
+            exc: 0.056,
+            a: 9.539, // unidade astronomica
+            T: 29.46 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "urn") || (nomeOrNum == 6))
+    {
+        return {
+            exc: 0.047,
+            a: 19.18, // unidade astronomica
+            T: 84.01 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "ntn") || (nomeOrNum == 7))
+    {
+        return {
+            exc: 0.009,
+            a: 30.06, // unidade astronomica
+            T: 164.8 // periodo em anos terrestres
+        }
+    }
+    else if ((nomeOrNum == "plt") || (nomeOrNum == 8))
+    {
+        return {
+            exc: 0.249,
+            a: 39.44, // unidade astronomica
+            T: 247.7 // periodo em anos terrestres
+        }
+    }
+}
+
+</script>
+<body style="margin:0; padding:0;">
+<div style="float:left; width:50%;">
+    <canvas id="cnv" width="800" height="800" style="border: 1px solid black;"></canvas>
+</div>
+<div style="float:left; width:48%; padding-left: 10px;">
+    <div><label for="exc">&epsilon; =</label><input type="text" id="exc" value="0.3" readonly /> (excentricidade)</div>
+    <div><label for="a">a =</label><input type="text" id="a" value="30" readonly /> UA (semi-eixo maior)</div>
+    <div><label for="T">T =</label><input type="text" id="T" value="0.3" readonly /> Anos terrestres (período)</div>
+    <div><label for="planetaSel">Escolha o planeta</label>
+        <select class="selectInfo" id="planetaSel">
+            <option value="mrc">Mercúrio</option>
+            <option value="vns">Vênus</option>
+            <option value="ter">Terra</option>
+            <option value="mrt">Marte</option>
+            <option value="jpt">Júpiter</option>
+            <option value="stn" selected>Saturno</option>
+            <option value="urn">Urano</option>
+            <option value="ntn">Netuno</option>
+            <option value="plt">Plutão</option>
+        </select>
+    </div>
+    <div><input type="button" id="reajusta" value="Reajusta" /></div>
+</div>
+</body>
