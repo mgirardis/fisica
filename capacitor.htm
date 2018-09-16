@@ -1,0 +1,238 @@
+<html>
+
+<head> <meta content="text/html" charset=utf-8>
+
+<script>
+/////////////////////////////////////////////////////////
+/////////     TRANSFORMAÇAO DE COORDENADAS    /////////
+///////////////////////////////////////////////////////
+var xmin;
+var xmax;
+var ymin;
+var ymax;
+var W;
+var H;
+var Bx;
+var Ax;
+var By;
+var Ay;
+function cx(x) {return Ax + Bx * x;}
+function cy(y) {return Ay + By * y;}
+///////////////////////////////////////////////////////
+
+var x = new Array();
+var y = new Array();
+var xFinal;
+var yMax;
+var yMin;
+var iter;
+var tictac;
+
+var ctx;
+
+//Constantes globais
+var epsilonZero = 8.85e-12;
+var constEletrica= 9e9;
+var pi = Math.PI;
+
+window.onload = function()
+{
+	resetaCanvas();
+	document.getElementById("calculabtn").onclick = function()
+	{
+		calcula();
+	}
+}
+
+function resetaCanvas()
+{
+	var dx = parseFloat(document.getElementById('area').value);
+	var dy = parseFloat(document.getElementById('dist').value);
+	xmin = -0.5;
+	xmax= dx + 0.5;
+	ymin = -dy/2 - 0.5;
+	ymax = dy/2 + 0.5;
+	W = document.getElementById('cnv').width;
+	H = document.getElementById('cnv').height;
+	Bx = W / (xmax-xmin);
+	Ax = -Bx*xmin;
+	By = H / (ymin-ymax);
+	Ay = -By*ymax;
+
+	//variaveis
+	xFinal = dx; //comprimento do capactior
+	yMax = dy/2;// posicao da placa do capacitor
+	yMin = -yMax;
+
+	x = new Array();
+	y = new Array();
+	x[0] = 0;
+	y[0] = 0;
+
+	iter = 0;
+
+	ctx = document.getElementById('cnv').getContext('2d');
+	desenha();
+}
+
+function SistemaLinear(x0, B0m, qE0m, dt)
+{
+	this.B0m = B0m;
+	this.qE0m = qE0m;
+	this.dt = dt;
+
+	this.x = x0;
+	/*
+		x' = vx
+		y' = vy
+		vx' = vy (B0/m)
+		vy' = q (E0/m) - vx (B0/m)
+		com:
+		x = x[0]
+		y = x[1]
+		vx = x[2]
+		vy = x[3]
+	*/
+	this.Step = function()
+	{
+		this.x[2] = this.x[2] + dt * (this.x[3] * this.B0m);
+		this.x[3] = this.x[3] + dt * (this.qE0m - this.x[2] * this.B0m);
+		this.x[0] = this.x[0] + dt * this.x[2];
+		this.x[1] = this.x[1] + dt * this.x[3];
+	};
+}
+
+function calcula()
+{
+	resetaCanvas();
+	if (tictac)
+	{
+		clearInterval(tictac);
+	}
+	//Variavéis controláveis pelo usuário
+	var area = parseFloat(document.getElementById('area').value);
+	var dist = parseFloat(document.getElementById('dist').value);
+	var z = 1;
+	var cargaCapacitor = parseFloat(document.getElementById('cargaC').value);
+	var campoMagnetico = parseFloat(document.getElementById('campM').value);
+	var cargaPartic = parseFloat(document.getElementById('cargaP').value);
+	var massa = parseFloat(document.getElementById('massa').value);
+	var velocidadeX = parseFloat(document.getElementById('velx').value);
+
+	var campoEletrico = cargaCapacitor/(area*epsilonZero);
+
+	// resolver o sistema para achar x,y:
+	/*
+	x' = vx
+	y' = vy
+	vx' = vy (B0/m)
+	vy' = q (E0/m) - vx (B0/m)
+	*/
+
+	var B0m = campoMagnetico / massa;
+	var qE0m = cargaPartic * campoEletrico / massa;
+	//console.log(B0m);
+	//console.log(qE0m);
+	var dt = parseFloat(document.getElementById('dt').value); // o intervalo (em ms) é 1e3 * dt
+	var intervalo = parseInt(1000*dt);
+	
+	// condicoes iniciais
+	var x0 = [ 0, 0, velocidadeX, 0 ]; // xi, yi, vxi, vyi
+	var particula = new SistemaLinear(x0, B0m, qE0m, dt)
+
+	//Variaveis utilizadas para guardar a posicao x,y da particula para desenhar
+	x = new Array();
+	y = new Array();
+	x[0] = particula.x[0];
+	y[0] = particula.x[1];
+
+	//laço do movimento
+	var i = 0;
+	while ((particula.x[0] <= xFinal) && (particula.x[1] <= yMax) && (particula.x[1] >= yMin)) //(i < 100)
+	{
+		particula.Step();
+		x[i] = particula.x[0];
+		y[i] = particula.x[1];
+		i++;
+	}
+
+	//console.log(x);
+	//console.log(y);
+
+	iter = 0;
+	tictac = setInterval('anima()',intervalo);
+}
+
+
+//funcoes
+function anima()
+{
+	//limpar canvas
+	ctx.clearRect(0,0,W,H);
+
+	desenha();
+
+	iter++;
+	if(iter==x.length) clearInterval(tictac);
+	
+}
+
+function desenha()
+{
+	//capacitor
+	ctx.beginPath();
+	ctx.strokeStyle = 'red';
+	ctx.moveTo(cx(0),cy(yMax)); //põe a 'caneta' lá
+	ctx.lineTo(cx(xFinal),cy(yMax)); //move a caneta, riscando
+	ctx.moveTo(cx(0),cy(yMin)); //põe a 'caneta' lá
+	ctx.lineTo(cx(xFinal),cy(yMin)); //move a caneta, riscando
+	ctx.stroke();
+	//particula 
+	ctx.beginPath();
+	ctx.arc(cx(x[iter]),cy(y[iter]),2,0,2*pi,0);
+	ctx.strokeStyle = 'black';
+	ctx.fillStyle = 'black';
+	ctx.fill();
+	ctx.stroke();
+}
+
+
+</script>
+</head>
+
+<body>
+<div style="float:left; width: 49%; overflow: scroll;">
+<canvas id="cnv" width="400" height="400" style='border:1px solid black'></canvas>
+</div>
+<div style="float:left; width: 49%; overflow: scroll;">
+<p>
+<i>Carga da Partícula</i>:<input type='text' id='cargaP' value='1.602e-19' size='3'> Coulomb
+</p>
+<p>
+<i>Carga do Capacitor</i>:<input type='text' id='cargaC' value='1.602e-19' size='3'> Coulomb
+</p>
+<p>
+<i>Area</i>:<input type='text' id='area' value='1' size='3'> metro^2
+</p>
+<p>
+<i>Distância entre as placas</i>:<input type='text' id='dist' value='1' size='3'> metro
+</p>
+<p>
+<i>Campo Magnético</i>:<input type='text' id='campM' value='1e-90' size='3'> Tesla
+</p>
+<p>
+<i>Massa da Partícula</i>:<input type='text' id='massa' value='9.11e-31' size='3'> Kg
+</p>
+<p>
+<i>Velocidade Inicial em x</i>:<input type='text' id='velx' value='100' size='3'> m/s
+</p>
+<p>
+<i>Intervalo de integração</i>:<input type='text' id='dt' value='0.0001' size='3'> segundos
+</p>
+<p>
+<input type="button" id="calculabtn" value="calcular">
+</p>
+</div>
+</body>
+
+</html>
