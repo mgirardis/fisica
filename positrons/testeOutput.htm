@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Untitled Document</title>
+<script language="javascript" type="text/javascript">
+
+function getElem() {
+    alert(document.getElementById("op").value);
+}
+
+window.onload = function() {
+    alert(document.getElementById("op").value);
+}
+//for (var i = 0; i < op.attributes.length; i++) {
+//	document.write(op.attributes[i].nodeName);
+//}
+//document.getElementById("output").value = "tchau";
+</script>
+</head>
+
+<body>
+<p>oi</p>
+<div id="divDeMerda"></div>
+<p><input id="nome" name="nome" type="text" size="20" maxlength="20" />
+</p>
+<p><textarea id="op" name="op" cols="120" rows="30">oie!</textarea></p>
+<p><input type="button" value="get element" onclick="getElem()" /></p>
+</body>
+</html>

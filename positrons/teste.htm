@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Grama crescendo</title>
+<script type="text/javascript" language="javascript">
+/*function TransCoord(cLrg,cAlt,mxi,myi,mxf,myf) {
+	this.Bx = cLrg/(mxf-mxi);
+	this.Ax = - this.Bx * mxi;
+	this.By = cAlt/(myi-myf);
+	this.Ay = - this.By * myf;
+}
+TransCoord.prototype.cx = function(mx) {
+	return this.Ax + this.Bx * mx;
+}
+TransCoord.prototype.cy = function(my) {
+	return this.Ay + this.By * my;
+}
+
+//variaveis globais
+var timer, stage, intervalos, tc;
+
+//n is the number to catch the subinterval index
+//a and b are, respectively, the begin and the end of the subintervals
+//w is the width of the main interval
+function getSubIntervalIndex(n, dx, a, b, w) {
+	var i = a;
+	while (i < b) {
+		var temp = i + dx;
+
+		if ((n >= i) && (n < temp)) {
+			temp = Math.floor(temp*w);
+			break;
+		}
+		i = temp;
+	}
+
+	return temp;
+}
+
+function lineDraw(x, h) {
+	stage.beginPath();
+	stage.lineWidth = 2;
+	stage.strokeStyle = "#0C0";
+	stage.moveTo(tc.cx(x), tc.cy(0));
+	stage.lineTo(tc.cx(x), tc.cy(h));
+	stage.closePath();
+	stage.stroke();
+}
+
+function draw() {
+	var h;
+	for (var i = 0; i < 100; i++) {
+		h = intervalos[i] / 100;
+		lineDraw(i, h);
+	}
+}
+
+function sorteia() {
+	var n = Math.random();
+
+	var larguraIntervalo = intervalos.length;
+
+	var index = getSubIntervalIndex(n, 0.01, 0, 1, larguraIntervalo);
+
+	intervalos[index] += 1;
+
+	draw();
+}
+
+function canvasReset(w, h) {
+	stage.clearRect(0, 0, w, h);
+
+	intervalos = new Array(100);
+	for (var i = 0; i < 100; i++) intervalos[i] = 0;
+
+	tc = new TransCoord(w, h, 0, 0, intervalos.length, 1);
+
+	timer = setInterval("sorteia()", 10);
+}
+*/
+window.onload = function() {
+	var canvas = document.getElementById("cnv");
+	var attQt = canvas.attributes.length;
+	for (var i = 0; i < attQt; i++) {
+		if (canvas.attributes[i].nodeName == "width") {
+			cnvWidth = canvas.attributes[i].value;
+		} else if (canvas.attributes[i].nodeName == "height") {
+			cnvHeight = canvas.attributes[i].value;
+		}
+	}
+
+    stage = canvas.getContext("3d");
+    stage.clearRect(0,0,cnvWidth,cnvHeight);
+
+    stage.beginPath();
+	stage.lineWidth = 2;
+	stage.strokeStyle = "#0C0";
+	stage.moveTo(0, 0, 0);
+	stage.lineTo(100, 100, 10);
+	stage.closePath();
+	stage.stroke();
+	//canvasReset(cnvWidth, cnvHeight);
+}
+
+</script>
+</head>
+
+<body>
+<center><canvas id="cnv" width="600" height="300" style="border: 1px solid #000;"></canvas></center>
+<div id="debug"></div>
+</body>
+</html>

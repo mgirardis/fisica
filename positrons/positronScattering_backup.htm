@@ -1,0 +1,355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Positron Scattering</title>
+<script type="text/javascript" language="javascript" src="positronScatteringData.js"></script>
+<script type="text/javascript" language="javascript" src="drawingLib.js"></script>
+<script type="text/javascript" language="javascript">
+
+/*
+ * Calculates a linear transformation between the "real world"
+ * and the canvas world.
+ * param @ cLrg int :: canvas width
+ * param @ cAlt int :: canvas height
+ * param @ mxi,myi real,real :: left-bottom coordinate of the real world
+ * param @ mxf,myf real,real :: top-right coordinate of the real world
+ */
+function TransCoord(cLrg,cAlt,mxi,myi,mxf,myf) {
+	this.Bx = cLrg/(mxf-mxi);
+	this.Ax = - this.Bx * mxi;
+	this.By = cAlt/(myi-myf);
+	this.Ay = - this.By * myf;
+
+	this.bot_left = [mxi, myi];
+	this.top_right = [mxf, myf];
+}
+TransCoord.prototype.cx = function(mx) {
+	return this.Ax + this.Bx * mx;
+}
+TransCoord.prototype.cy = function(my) {
+	return this.Ay + this.By * my;
+}
+TransCoord.prototype.getWorldWidth = function() {
+	return Math.abs(this.bot_left[0] - this.top_right[0]);
+}
+TransCoord.prototype.getWorldHeight = function() {
+	return Math.abs(this.bot_left[1] - this.top_right[1]);
+}
+
+// generates a gaussian distribution with mean xMed and stdDeviation standard deviation
+function gaussRand(xMed, stdDeviation) {
+	var v1, v2, R;
+	do {
+		v1 = 2 * Math.random() - 1;
+		v2 = 2 * Math.random() - 1;
+		R = v1*v1 + v2*v2;
+	} while ((R>=1)||(R==0));
+
+	var tmp = Math.sqrt(-2*Math.log(R)/R);
+
+	return xMed + stdDeviation * v2 * tmp;
+}
+
+/* All the parameters below are in the SI units
+ *
+ * Every "draw" function below belongs to the drawingLib.js
+ * Every "color" function too
+ */
+
+// important global constants
+var bohrRadius = 5.29177E-11, eVToJoules = 1.60218E-19, sqrcmToSqrMeters = 1E-04;
+var energySupLimit = 47, energyMinLimit = 0.5; // eV: mean positrons' initial energy, minimum data energy
+var totalPositrons = 1E+01; // number of positrons to be generated
+var output; // HTML text area used to write the output data
+var tc; // where the TransCoord object will be instatiated
+var stage, canvas; // canvas instantiates the canvas and stage is its context
+
+/* Positron class
+ * it should be initiated giving some energy
+ * and some position on the space
+ * Parameters:
+ * energy :: float - positron energy
+ * r :: float(3) - positron current position
+ * rAnt :: float(3) - positron's position on the step i - 1
+ * alive :: logical - if this is true, the positron still alive, if this is false, it annihilated
+ * _color :: string - the path color
+ */
+function Positron() {
+	var red, green, blue; // the colors for the positron;
+
+    // random initial energy and position
+    do { this.energy = gaussRand(energySupLimit, 1); } while ((this.energy > 50) || (this.energy < 0.5)); // eV
+	this.r = new Array(3);
+    this.r[0] = gaussRand(0, 2*bohrRadius); // m
+	this.r[1] = gaussRand(0, 2*bohrRadius); // m
+	this.r[2] = gaussRand(0, 2*bohrRadius); // m
+
+	this.prevR = new Array(3);
+	this.prevR = this.r;
+
+	// setting the positron as alive
+    this.alive = true;
+
+	// setting the positron's path color
+	// getting random numbers only between 0 and 200 'cause I don't want much light colors
+	red = Math.random() * 200;
+	green = Math.random() * 200;
+	blue = Math.random() * 200;
+	this._color = colorRgbToHex(red, green, blue); // verificar esta função
+
+	// drawing first position
+	drawPoint(this.r, this._color, 3);
+}
+Positron.prototype.setTargetIndex = function() {
+    // the following lines are commented cause I got only one kind of medium's particle
+    //do { this.targetIndex = Math.floor(Math.random() * energy_xDat.length); } while (this.targetIndex == energy_xDat.length);
+	this.targetIndex = 0;
+}
+Positron.prototype.calcRandomMFP = function() {
+	var mfp, t, p;
+
+	// density_Dat[] is global var
+	mfp = 1 / (density_Dat[this.targetIndex] * this.getCSvalue(0)); // the index is 0 to get the TCS
+
+    // getting random direction
+    t = Math.random() * 2 * Math.PI;
+    p = Math.random() * Math.PI;
+
+	return { mod: mfp, theta: t, phi: p };
+}
+Positron.prototype.setNewPosition = function(mfp) {
+	// setting previous position
+	this.prevR  = this.r;
+
+	// setting current position
+    this.r[0] += mfp.mod * Math.sin(mfp.phi) * Math.cos(mfp.theta);
+    this.r[1] += mfp.mod * Math.sin(mfp.phi) * Math.sin(mfp.theta);
+    this.r[2] += mfp.mod * Math.cos(mfp.phi);
+}
+Positron.prototype.getPosition = function() {
+	return this.r;
+}
+Positron.prototype.getPrevPosition = function() {
+	return this.prevR;
+}
+Positron.prototype.getAbsPos = function() {
+	return Math.sqrt(this.r[0]*this.r[0] + this.r[1]*this.r[1] + this.r[2]*this.r[2]);
+}
+Positron.prototype.move = function() {
+	// set the kind of the medium's particle we want to interact
+    this.setTargetIndex();
+
+    // calculating new r position
+	this.setNewPosition(this.calcRandomMFP());
+
+	// drawing the positron's path BUGGGGGGGGGGGGGG
+//	this.drawPath();
+}
+Positron.prototype.getCSvalue = function(csIndex) {
+    // the following content should be a cubic spline routine
+    // but for the moment it is just linear
+    // the result goes on square meters unit
+    // and is multiplied by 10^-16, what is generally made on real data
+	// energy_xDat[], crSect_yDat[] and sqrcmToSqrMeters are global vars
+    return evaluateData(energy_xDat[this.targetIndex][csIndex], crSect_yDat[this.targetIndex][csIndex], this.energy) * sqrcmToSqrMeters * 1E-16;
+}
+Positron.prototype.getInteractionType = function() {
+	var tcs, total, csPercent, rNum;
+
+	//calculate total cross section
+	tcs = this.getCSvalue(0);
+
+    // check if the positron is out the sphere
+    if (this.getAbsPos() >= sphereRadius) { // sphereRadius is global var
+        return "out";
+    }
+
+	// calculating the percentual cross sections
+	total = energy_xDat[this.targetIndex].length;
+	csPercent = new Array(total);
+	for (var j = 0; j < total; j++) {
+		if (j == 0) { csPercent[0] = 1; continue; }//the first index is equal to "tcs/tcs", so it has to be 1
+		csPercent[j] = this.getCSvalue(j)/tcs;
+	}
+
+	do { rNum = Math.random(); } while (rNum == 0); // getting some random value greater than zero
+
+	/* csPercent indexes:
+	 * 0 = tcs / tcs;
+	 * 1 = aniquilação / tcs;
+	 * 2 = formação PS / tcs;
+	 * dúvidas olhar no arquivo de dados
+	 *
+	 * abaixo seleciona-se o tipo de interação baseado no percentual em relação à TCS.
+	 * a quantidade de estruturas de seleção (if e else) depende de quantos tipos diferentes de iteração teremos,
+	 * ou seja, da quantidade de índices correspondentes às seções de choque no arquivo de dados
+	 *
+	 * dúvida: tem como generalizar a estrutura abaixo? -> vamos pensar! :)
+	 */
+	if ((rNum > 0) && (rNum <= csPercent[1])) {
+		// the random number is in (0,Pa], where Pa is the annihilation percentual
+		// thus the positron annihilated directly inside the sphere
+		return "in";
+	} else if ((rNum > csPercent[1]) && (rNum <= (csPercent[1] + csPercent[2]))) {
+		// the random number is in (Pa,Pp], where Pp is the Ps formation percentual
+		// thus the positron formed positronium
+		return "Ps";
+	} else {
+		// the random number is in (Pp,1], thus the positron elasticaly scattered from medium's particles
+		return "elastic";
+	}
+}
+Positron.prototype.interact = function() {
+	var itType = this.getInteractionType();
+	var rNum;
+
+	if (itType == "out") {
+		this.printValuesLine([this.r[0],this.r[1],this.r[2],this.energy], "   ");
+		this.alive = false;
+		return;
+	} else if (itType == "in") {
+		this.printValuesLine([this.r[0],this.r[1],this.r[2],this.energy], "   ");
+		this.alive = false;
+		return;
+	} else if (itType == "Ps") {
+		this.printValuesLine([this.r[0],this.r[1],this.r[2],this.energy], "   ");
+		this.alive = false;
+		return;
+	} else if (itType == "elastic") {
+		rNum = 3 * (Math.random()+1);
+		this.energy = this.energy - gaussRand(rNum, Math.sqrt(rNum)); // losing some random energy in a elastic collision
+		if ((this.energy < 0.5) || (this.energy > 50)) {
+			this.alive = false;
+			output.value += "# out of energy data range: E = " + this.energy.toExponential(10) + " eV\r\n";
+			return;
+		}
+		this.printValuesLine([this.r[0],this.r[1],this.r[2],this.energy], "   ");
+		return;
+	}
+}
+Positron.prototype.printValuesLine = function(v, separator) {
+	var str, total = v.length;
+
+	str = "";
+	for (var i = 0; i < total; i++) {
+		str += v[i].toExponential(10) + separator;
+	}
+	str += "\r\n";
+
+	output.value += str;
+}
+/* the following methos are for drawing the informations on the canvas
+ */
+Positron.prototype.drawPath = function() {
+	// draws the line between the points
+//	drawLine(this.getPrevPosition(), this.getPosition(), this._color, 1);
+	// tenho que tentar descobrir porque ele sempre força o this.prevR a ser igual ao this.r
+
+	// draws the point in the positron's current place
+	drawPoint(this.getPosition(), this._color, 3);
+}
+
+// adjusts a linear spline
+// and evaluate y on the given x0
+function evaluateData(x, y, x0) {
+    var y0; // the spline value at x0
+    var k; // on the loop it is j + 1
+    var angCoef, linCoef; // the spline coef
+    var total = x.length - 1;
+    for (var j = 0; j < total; j++) {
+        k = j + 1;
+        if ((x0 > x[j]) && (x0 < x[k])) {
+            angCoef = (y[k] - y[j]) / (x[k] - x[j]);
+            linCoef = y[j] - angCoef*x[j];
+            y0 = angCoef * x0 + linCoef;
+            break;
+        } else {
+            if (x0 == x[j]) {
+                y0 = y[j];
+                break;
+            } else if (x0 == x[k]) {
+                y0 = y[k];
+                break;
+            }
+        }
+    }
+    return y0;
+}
+
+// resets the program
+function programReset() {
+	// instatiating and
+	// cleaning the output textarea
+    output = document.getElementById("output");
+	output.value = "";
+
+	// instantiating the
+	// canvas and the stage
+	// and cleaning it
+	canvas = document.getElementById("cnv");
+	stage = canvas.getContext("2d");
+	stage.clearRect(0, 0, canvas.width, canvas.height);
+
+	// instantiating the TransCoord object
+	// bottom-left point: (-1,-1)
+	var bt_lf = -1E-5;
+	// top-right point: (1,1)
+	var tp_rt = 1E-5;
+	tc = new TransCoord(canvas.width, canvas.height, bt_lf, bt_lf, tp_rt, tp_rt);
+
+	// drawing some axes
+	drawAxes(bt_lf, tp_rt, "#CCC", 1);
+}
+
+// begin of main program
+
+window.onload = function() {
+	// reseting the program
+	programReset();
+
+    var positron;
+
+    for (var i = 0; i < totalPositrons; i++) {
+        positron = new Positron();
+		output.value += "### positron " + i + "\r\n";
+		output.value += "#      x (m)             y (m)              z (m)              E (eV)\r\n";
+		positron.printValuesLine([positron.r[0],positron.r[1],positron.r[2],positron.energy], "   ");
+
+        while (positron.alive) {
+			// drawing the lines separated, while I cannot discover where the program is bugging
+			stage.beginPath();
+			stage.moveTo(tc.cx(positron.r[0]), tc.cy(positron.r[1]));
+
+			// moving the positron and draws a point where it is
+            positron.move();
+
+			// drawing line...
+			stage.lineTo(tc.cx(positron.r[0]), tc.cy(positron.r[1]));
+			stage.strokeStyle = positron._color;
+			stage.lineWidth = 2;
+			stage.closePath();
+			stage.stroke();
+
+			drawPoint(positron.r, positron._color, 2);
+
+			// interacts with the random medium's particle and
+			// when annihilating, draws photons (this last feature must be implemented)
+			positron.interact(); // interacts with medium's particles and when annihilating, draws the photons
+        }
+		output.value += "###\r\n\r\n";
+		positron = null;
+    }
+
+}
+
+//end of main program
+
+</script>
+</head>
+
+<body>
+<canvas id="cnv" width="600" height="600" style="border: 1px solid #000;"></canvas>
+<textarea id="output" name="output" cols="120" rows="15" wrap="physical"></textarea>
+</body>
+</html>
