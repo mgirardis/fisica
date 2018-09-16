@@ -1,0 +1,84 @@
+﻿<html>
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+9th of November, 2013
+-->
+    <head>
+        <script src="ohm.js" type="text/javascript"></script>
+        <link href="../style/estilos.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <fieldset id="entrada">
+            <legend>Entrada</legend>
+            <div class="linha">
+                <label for="circuitoDDP">V (V) = </label>
+                <input type="range" name="circuitoDDP" id="circuitoDDP" value="5" min="0" max="20" step="1" />
+                <!--input type="text" name="circuitoDDP" id="circuitoDDP" value="5" data-slider="true" data-slider-range="0,20" data-slider-step="1" data-slider-snap="true" />-->
+                <input type="text" name="circuitoDDPValue" id="circuitoDDPValue" value="" readonly />
+                <span class="comentario">Diferença de potencial elétrico no circuito em Volts</span>
+            </div>
+            <fieldset id="materialGrupo">
+                <legend>Material</legend>
+                <div class="linha">
+                    <label for="materialSelect">Material:</label>
+                    <select name="materialSelect" id="materialSelect">
+                        <!-- valores em unidades do SI (Ohm * metro) para a resistividade do material a 20 graus Celsius:
+                             R = rho * l / A
+                             onde R é a resistência (Ohm), l o comprimento do resistor (metros) e A a área de secção reta do resistor (m^2)
+                        -->
+                        <option value="2.65e-8">Alumínio</option>
+                        <option value="1e13">Borracha</option>
+                        <option value="1.724e-8" selected>Cobre</option>
+                        <option value="1e17">Enxofre</option>
+                        <option value="9.7e-8">Ferro</option>
+                        <option value="7.142857142857142">Gordura animal</option>
+                        <option value="2.857142857142857">Músculo animal</option>
+                        <option value="7.1e-8">Latão (Bronze com Cu 63% + Zn 37%)</option>
+                        <option value="2.24e-8">Ouro</option>
+                        <option value="1e20">Plástico PET</option>
+                        <option value="1.59e-8">Prata</option>
+                        <option value="1e2">Solo da Terra</option>
+                        <option value="1e9">Vidro</option>
+                    </select>
+                    <span class="comentario">
+                        Valores da resistividade (&rho; em Ohms * metro) retirados de:
+                        <a href="http://www.engineeringtoolbox.com/resistivity-conductivity-d_418.html" target="_blank">Engineering Toolbox</a>
+                        e
+                        <a href="http://edufer.free.fr/026.html" target="_blank">EDUFER</a>. Dúvidas olhar no livro do Callister, 7a ed.
+                    </span>
+                </div>
+                <div class="linha">
+                    <label for="materialComprimento">L (mm) = </label>
+                    <input type="text" name="materialComprimento" id="materialComprimento" value="" />
+                    <span class="comentario">Comprimento do Resistor em milimetros</span>
+                </div>
+                <div class="linha">
+                    <label for="materialArea">A (mm<sup>2</sup>) = </label>
+                    <input type="text" name="materialArea" id="materialArea" value="" />
+                    <span class="comentario">Área de seção reta do Resistor em milimetros quadrados</span>
+                </div>
+            </fieldset>
+        </fieldset>
+        <div class="linha">
+            <input type="button" name="circuitoCalculaBtn" id="circuitoCalculaBtn" value="Calcular" />
+        </div>
+        <fieldset id="saida">
+            <legend>Saida de dados</legend>
+            <div class="linha">
+                <label for="circuitoResistencia">R (&Omega;) = </label>
+                <input type="text" name="circuitoResistencia" id="circuitoResistencia" value="" readonly />
+                <span class="equacao">R = &rho; * L / A</span>
+                <span class="comentario">Resistência do material em Ohms</span>
+            </div>
+            <div class="linha">
+                <label for="circuitoCorrente">I (A) = </label>
+                <input type="text" name="circuitoCorrente" id="circuitoCorrente" value="" readonly />
+                <span class="equacao">I = V/R</span>
+                <span class="comentario">Corrente resultante no circuito (em Àmperes)</span>
+            </div>
+        </fieldset>
+        <a href="../index.htm" target="_top">Voltar</a>
+    </body>
+</html>
