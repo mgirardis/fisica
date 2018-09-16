@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Author: Mauricio Girardi-Schappo, PhD.
+Distributed under GNU License v3.0
+
+27th of December, 2010
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Pêndulo Simples</title>
+<!--[if IE]>
+<script type="text/javascript" src="excanvas.js"></script>
+<![endif]-->
+<style type="text/css">
+
+div#container {
+	width: 720px;
+	font-family: sans-serif;
+	font-size: 11px;
+	border: 1px solid #CCC;
+	margin: 0 auto;
+	height: 100%;
+	padding: 10px;
+	overflow: hidden;
+}
+
+div#left {
+	width: 480px;
+	float: left;
+	height: 460px;
+	border: 1px dashed #CCC;
+	margin-right: 10px;
+}
+
+div#right {
+	border: 1px dashed #CCC;
+	width: 220px;
+	height: 460px;
+	float: left;
+	text-align: center;
+}
+
+div .oscilatorBox {
+	width: 100%;
+	height: 20%;
+	border-bottom: 1px dashed #EEE;
+}
+
+div .title {
+	font-weight: bold;
+	width: 100%;
+	height: 20%;
+	background-color: #EEE;
+}
+
+div .title p {
+	padding: 0px;
+	margin: 0px;
+	padding-left: 5px;
+}
+
+.infoList {
+	width: 100%;
+	height: 100%;
+}
+
+.infoList tr td {
+	border: 1px dotted #EEE;
+	width: 20%;
+	height: 100%;
+	text-align: center;
+}
+
+.inputInfo {
+	font-size: 11px;
+	width: 30px;
+	border: 1px solid #EEE;
+	background-color: #FFF;
+	color: #333;
+	font-family: sans-serif;
+	text-align: center;
+}
+
+.selectInfo {
+	font-size: 11px;
+	border: 1px solid #EEE;
+	background-color: #FFF;
+	color: #333;
+	font-family: sans-serif;
+	text-align: center;
+}
+
+div .info {
+	width: 100%;
+	vertical-align: middle;
+	height: 76%;
+}
+
+.botao {
+	height: 20px;
+	font-size: 11px;
+	font-family: sans-serif;
+	background-color: #EEE;
+}
+
+.botaoRemove {
+	height: 17px;
+	font-size: 10px;
+	border: 1px solid #CCC;
+	font-family: sans-serif;
+	background-color: #EEE;
+}
+
+div#menu {
+	text-align: center;
+	width: 100%;
+	height: 20%;
+}
+
+div#mainTitle {
+	width: 100%;
+	float: left;
+	border-bottom: 1px dashed #CCC;
+	margin-bottom: 10px;
+}
+
+div#mainTitle h1 {
+	text-align: center;
+	font-size: 18px;
+}
+
+</style>
+<script type="text/javascript" language="javascript">
+function TransCoord(cLrg,cAlt,mxi,myi,mxf,myf) {
+	this.Bx = cLrg/(mxf-mxi);
+	this.Ax = - this.Bx * mxi;
+	this.By = cAlt/(myi-myf);
+	this.Ay = - this.By * myf;
+}
+TransCoord.prototype.cx = function(mx) {
+	return this.Ax + this.Bx * mx;
+}
+TransCoord.prototype.cy = function(my) {
+	return this.Ay + this.By * my;
+}
+
+// L = comprimento, T = período, f = freq, x = x da corda, y = y da corda;
+// stg = context, theta = ang inicial, sWidth = stage Width, sHeight = stage height
+function Pendulo(L, theta, x, y, stg, sWidth, sHeight, color) {
+	this._color = color;
+	this.g = 9.8; //aceleração da gravidade m/s²
+	this.pi2 = 2 * Math.PI;
+	this._size = L;
+	this._period = this.pi2 * Math.sqrt(L/this.g/10);
+	this._freq = 1 / this._period;
+	this._angfreq = this.pi2 * this._freq;
+	this.xAxis = x;
+	this.yAxis = y;
+	this.stg = stg;
+	this.thetaZero = theta;
+	this._x = 0;
+	this._y = 0;
+	this._theta = 0;
+	this.stgWidth = sWidth;
+	this.stgHeight = sHeight;
+	var xMax = sWidth / 20; //dividido por 10, dividido por 2, assim o 0 fica no meio
+	var yMax = -sHeight / 10;
+	this.tc = new TransCoord(sWidth, sHeight, -xMax, yMax, xMax, 0);
+}
+Pendulo.prototype.draw = function() {
+	this.stg.beginPath();
+	this.stg.moveTo(this.tc.cx(this.xAxis), this.tc.cy(this.yAxis));
+	this.stg.lineTo(this.tc.cx(this._x), this.tc.cy(this._y));
+	this.stg.lineWidth = 2;
+	this.stg.strokeStyle = this._color;
+	this.stg.closePath();
+	this.stg.stroke();
+
+	this.stg.beginPath();
+	this.stg.arc(this.tc.cx(this._x),this.tc.cy(this._y),4,0,this.pi2,2);
+	this.stg.fillStyle = this._color;
+	this.stg.fill();
+	this.stg.closePath();
+	this.stg.stroke();
+}
+//t = time;
+/*
+sobre a coordenada y:
+para acertar a oscilação da coordenada y, tive que setar o referencial (0,0) no eixo de rotação do pêndulo.
+desta maneira, acertei todos os problemas, a saber:
+* o desenho do comprimento diminuia ao aumentar L
+* a coord y atingia seu máx para thetazero, mas o esperado era que isso acontecesse
+  para theta = 0, ou seja, quando ele não tivesse mais energia potencial
+*/
+Pendulo.prototype.oscilate = function(t) {
+	this._theta = this.thetaZero * Math.cos(this._angfreq * t);
+	this._x = this._size * Math.sin(this._theta);
+	this._y = - this._size * Math.cos(this._theta);
+	this.stg.clearRect(0,0,this.stgWidth,this.stgHeight);
+	this.draw();
+}
+
+var stage, tc, moveInterval, t, cnvWidth, cnvHeight;
+var oscilador = new Array();
+var inicio = new Date();
+inicio = inicio.getTime();
+var t;
+
+function anima() {
+	var agora = new Date();
+	t = (agora.getTime() - inicio)/1000;
+	stage.clearRect(0,0,cnvWidth, cnvHeight);
+	for (var i in oscilador) {
+		oscilador[i]._theta = oscilador[i].thetaZero * Math.cos(oscilador[i]._angfreq * t);
+		oscilador[i]._x = oscilador[i]._size * Math.sin(oscilador[i]._theta);
+		oscilador[i]._y = - oscilador[i]._size * Math.cos(oscilador[i]._theta);
+		oscilador[i].draw();
+	}
+}
+
+function canvasReset() {
+	stage.clearRect(0,0,cnvWidth,cnvHeight);
+
+	inicio = new Date();
+	inicio = inicio.getTime();
+
+	if (moveInterval) {
+		clearInterval(moveInterval);
+	}
+	if (oscilador.length > 0) {
+		moveInterval = setInterval("anima()", 50);
+	}
+}
+
+function removeOscilador(oscIndex) {
+	var temp = new Array();
+	var n = oscilador.length - 1;
+	for (var i = 0; i < n; i++) {
+		if (i >= oscIndex) {
+			temp[i] = oscilador[i+1];
+		} else {
+			temp[i] = oscilador[i];
+		}
+	}
+	oscilador = temp;
+	var leftCol = document.getElementById("left");
+	leftCol.removeChild(document.getElementById("oscilador"+oscIndex));
+
+	ajustaTitulos();
+
+	canvasReset();
+}
+
+function ajustaTitulos() {
+	var oscTitles = document.getElementsByTagName("span");
+	var n = oscilador.length;
+	for (var i = n; i >= 1; i--) {
+		oscTitles[i-1].innerHTML = "Pêndulo " + i;
+	}
+}
+
+function adicionaOscilador() {
+	var L = parseFloat(document.getElementById("addComprimento").value);
+	var color = document.getElementById("colorSelect").value;
+	if (oscilador.length < 4) {
+		if ((L > 4.5) || (L < 0.45)) {
+			alert("O comprimento deve ser entre 0.45 e 4.5");
+			return;
+		}
+		var i = oscilador.length;
+		oscilador[i] = new Pendulo(L*10, 0.2, 0, 0, stage, cnvWidth, cnvHeight, color);
+		var leftCol = document.getElementById("left");
+		var temp = leftCol.innerHTML;
+		var str = "";
+		str += "<div id='oscilador"+i+"' class='oscilatorBox'>";
+		str += "<div id='oscTitle"+i+"' class='title'><p><span>Pêndulo "+(i+1)+"</span><input class='botaoRemove' type='button' value='Remover' onclick='removeOscilador("+i+")' /></p></div>";
+		str += "<div class='info'>";
+		str += "<table class='infoList'>";
+		str += "<tr>";
+		str += "<td><label>L (m) = <input class='inputInfo' type='text' name='comprimento' value='" + (oscilador[i]._size/10).toFixed(2) + "' readonly='1' /></label></td>";
+		str += "<td><label>T (s) = <input class='inputInfo' type='text' name='periodo' value='" + oscilador[i]._period.toFixed(2) + "' readonly='1' /></label></td>";
+		str += "<td><label>f (Hz) = <input class='inputInfo' type='text' name='frequencia' value='" + oscilador[i]._freq.toFixed(2) + "' readonly='1' /></label></td>";
+		str += "<td><label>&omega; (Hz) = <input class='inputInfo' type='text' name='freqang' value='" + oscilador[i]._angfreq.toFixed(2) + "' readonly='1' /></label></td>";
+		str += "<td style='color: " + oscilador[i]._color + "; font-weight: bold;'>Cor</td>";
+		str += "</tr>";
+		str += "</table>";
+		str += "</div>";
+		str += "</div>";
+		leftCol.innerHTML = str + temp;
+		ajustaTitulos();
+		canvasReset();
+	} else {
+		alert("São permitidos no máximo quatro pêndulos!");
+		return;
+	}
+}
+
+function somaComprimento(qt) {
+	var temp = parseFloat(document.getElementById("addComprimento").value);
+	if (((qt > 0) && (temp < 4.5)) || ((temp > 0.45) && (qt < 0))) {
+		temp += qt;
+		document.getElementById("addComprimento").value = temp.toFixed(2);
+	}
+}
+
+window.onload = function() {
+	var canvas = document.getElementById("cnv");
+	var attQt = canvas.attributes.length;
+	for (var i = 0; i < attQt; i++) {
+		if (canvas.attributes[i].nodeName == "width") {
+			cnvWidth = canvas.attributes[i].value;
+		} else if (canvas.attributes[i].nodeName == "height") {
+			cnvHeight = canvas.attributes[i].value;
+		}
+	}
+
+	stage = canvas.getContext("2d");
+
+	canvasReset();
+}
+
+</script>
+</head>
+<body>
+<div id="container">
+	<div id="mainTitle">
+		<h1>Comparando Pêndulos</h1>
+		<p>Ajuste o comprimento da corda clicando nos botões "+" ou "-", escolha a cor de sua preferência e adicione um pêndulo! Você poderá adicionar, no máximo, quatro pêndulos.</p>
+		<p>Compare a relação entre os períodos, as frequências e os comprimentos dos diferentes pêndulos para uma mesma amplitude e observe enquanto eles se movem em tempo real!</p>
+	</div>
+	<div id="left">
+		<div id="menu">
+			<label>Comprimento L (m) = </label><input class="botaoRemove" type="button" value="-" onclick="somaComprimento(-0.15)"><input class="inputInfo" type="text" id="addComprimento" name="addComprimento" value="3.00" readonly="1" /><input class="botaoRemove" type="button" value="+" onclick="somaComprimento(0.15)"><br />
+			<label>Cor = <select class="selectInfo" id="colorSelect">
+				<option value="#000" selected>Preto</option>
+				<option value="#C00">Vermelho</option>
+				<option value="#060">Verde</option>
+				<option value="#00F">Azul</option>
+				</select>
+			</label><br />
+			<input class="botao" type="button" id="addOscilator" name="addOscilator" value="Adicionar Pêndulo" onclick="adicionaOscilador()" />
+		</div>
+	</div>
+	<div id="right">
+		<canvas id="cnv" width="200" height="460"></canvas>
+	</div>
+</div>
+</body>
+</html>
